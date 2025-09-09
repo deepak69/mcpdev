@@ -1,0 +1,42 @@
+.container {
+  display: flex;
+  height: 100vh;
+  background: #fff;
+  overflow: hidden;
+}
+
+.chatSidebar {
+  width: 400px;
+  border-right: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  background: #fafafa;
+  min-width: 400px;
+}
+
+.componentArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  overflow: hidden;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+  
+  .chatSidebar {
+    width: 100%;
+    height: 50vh;
+    min-width: unset;
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .componentArea {
+    height: 50vh;
+  }
+}

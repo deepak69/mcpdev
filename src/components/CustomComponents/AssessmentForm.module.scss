@@ -1,0 +1,239 @@
+.assessmentForm {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.header h2 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 12px 0;
+}
+
+.header p {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.progressBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 40px;
+  padding: 20px 0;
+}
+
+.progressStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.stepNumber {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e0e0e0;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+
+  &.active {
+    background: #007bff;
+    color: white;
+  }
+}
+
+.progressStep span {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.progressLine {
+  width: 60px;
+  height: 2px;
+  background: #e0e0e0;
+  margin: 0 16px;
+}
+
+.dimensions {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.dimension {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #007bff;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.1);
+  }
+}
+
+.dimensionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.dimensionHeader h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.dimensionNumber {
+  background: #f8f9fa;
+  color: #666;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.maturityLevels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.maturityButton {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &:hover {
+    border-color: var(--maturity-color);
+    background: rgba(var(--maturity-color-rgb, 0, 123, 255), 0.05);
+  }
+
+  &.selected {
+    border-color: var(--maturity-color);
+    background: rgba(var(--maturity-color-rgb, 0, 123, 255), 0.1);
+  }
+}
+
+.maturityIndicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--maturity-color);
+  align-self: flex-start;
+}
+
+.maturityLabel {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.maturityDescription {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.summary {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.summaryStats {
+  display: flex;
+  justify-content: space-around;
+  gap: 20px;
+}
+
+.stat {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statNumber {
+  font-size: 24px;
+  font-weight: 700;
+  color: #007bff;
+}
+
+.statLabel {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 24px;
+  border-top: 1px solid #e0e0e0;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .assessmentForm {
+    padding: 0 16px;
+  }
+
+  .header h2 {
+    font-size: 24px;
+  }
+
+  .progressBar {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .progressLine {
+    width: 40px;
+    margin: 0 8px;
+  }
+
+  .maturityLevels {
+    grid-template-columns: 1fr;
+  }
+
+  .summaryStats {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+}

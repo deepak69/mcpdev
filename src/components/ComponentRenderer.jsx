@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { HtmlResource } from '@mcp-ui/client'
+import MCPRenderer from './MCPRenderer'
 import AssessmentForm from './CustomComponents/AssessmentForm'
 import WorkflowGuide from './CustomComponents/WorkflowGuide'
 import Dashboard from './CustomComponents/Dashboard'
@@ -38,23 +38,7 @@ export default function ComponentRenderer({ component, onComponentAction }) {
 
   // Handle MCP UI Resources
   if (component.type === 'mcp-resource') {
-    return (
-      <div className={styles.componentContainer}>
-        <div className={styles.componentHeader}>
-          <h2>Interactive Component</h2>
-          <div className={styles.badge}>MCP-UI</div>
-        </div>
-        <div className={styles.mcpRenderer}>
-          <HtmlResource
-            resource={component.resource}
-            onUiAction={(tool, params) => {
-              console.log('MCP UI Action:', { tool, params })
-              onComponentAction({ tool, params })
-            }}
-          />
-        </div>
-      </div>
-    )
+    return <MCPRenderer resource={component.resource} onAction={onComponentAction} />
   }
 
   // Handle custom components

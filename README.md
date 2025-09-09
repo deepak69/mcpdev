@@ -1,6 +1,6 @@
 # Agentic UI with MCP Integration
 
-A Next.js application that demonstrates an agentic UI with a reusable chat interface and custom component rendering using MCP-UI.
+A Next.js application that demonstrates an agentic UI with a reusable chat interface and custom component rendering using MCP-UI. It includes a fully working local MCP server implemented via a Next.js API route that returns MCP UI resources (text/html) rendered with `@mcp-ui/client`.
 
 ## 🏗️ Architecture
 
@@ -45,19 +45,22 @@ src/
 │   ├── page.module.scss        # Page-specific styles
 │   └── api/
 │       └── mcp-server/
-│           └── route.js        # MCP server API endpoint
+│           └── route.js        # MCP server API endpoint (POST tools/* & resources/read)
 ├── components/
 │   ├── ChatInterface.jsx       # Reusable chat component
 │   ├── ChatInterface.module.scss
-│   ├── ComponentRenderer.jsx   # Component renderer with MCP-UI
+│   ├── ComponentRenderer.jsx   # Switches between custom components and MCP UI
 │   ├── ComponentRenderer.module.scss
+│   ├── MCPRenderer.jsx         # Wrapper that renders <HtmlResource /> and wires onUiAction
+│   ├── MCPRenderer.module.scss
 │   └── CustomComponents/
 │       ├── AssessmentForm.jsx  # Assessment form component
 │       ├── AssessmentForm.module.scss
 │       ├── WorkflowGuide.jsx   # Workflow guide component
 │       └── WorkflowGuide.module.scss
 └── utils/
-    └── mcpClient.js            # MCP client utilities
+    ├── mcpClient.js            # (legacy sim + helper to create UI resources)
+    └── mcpServer.js            # Local MCP server: tools, uiResource generation, HTML generators
 ```
 
 ## 🛠️ Installation
@@ -89,10 +92,9 @@ src/
 - Components are dynamically loaded based on user input
 
 ### MCP Integration
-- Full integration with MCP-UI client library
-- Supports rendering UI resources from MCP servers
-- Handles UI actions and component interactions
-- Secure iframe rendering for external components
+- Local MCP server implemented at `src/utils/mcpServer.js` and exposed via `src/app/api/mcp-server/route.js`.
+- Returns MCP UI resources with `mimeType: text/html` and inline HTML strings; rendered securely in an iframe.
+- Frontend uses `HtmlResource` from `@mcp-ui/client`; UI actions are emitted via `onUiAction` and fed back into the chat.
 
 ## 🔧 Customization
 
@@ -111,19 +113,18 @@ src/
 - API routes handle MCP protocol requests
 - Easy to extend with real MCP server connections
 
-## 📚 MCP-UI Integration
+## 📚 MCP-UI Integration (Client)
 
-This project demonstrates how to integrate MCP-UI for interactive component rendering:
+This project renders MCP UI resources using `HtmlResource`:
 
 ```jsx
-import { UIResourceRenderer } from '@mcp-ui/client'
+import { HtmlResource } from '@mcp-ui/client'
 
-// Render MCP UI resources
-<UIResourceRenderer
+<HtmlResource
   resource={mcpResource}
-  onUIAction={(action) => {
-    console.log('UI Action:', action)
-    // Handle user interactions
+  onUiAction={(tool, params) => {
+    // Forward UI actions from the iframe back to chat/app logic
+    handleComponentAction({ tool, params })
   }}
 />
 ```
@@ -131,16 +132,96 @@ import { UIResourceRenderer } from '@mcp-ui/client'
 ### MCP UI Resource Structure
 ```javascript
 const uiResource = {
-  uri: 'ui://example/component',
-  mimeType: 'text/uri-list',
-  text: 'https://example.com/component',
+  uri: 'ui://assessment/123',
+  mimeType: 'text/html',
+  text: '<!DOCTYPE html>... (inline HTML with postMessage to parent) ...',
   _meta: {
-    title: 'Interactive Component',
-    'mcpui.dev/ui-preferred-frame-size': ['800px', '600px'],
-    'mcpui.dev/ui-initial-render-data': { theme: 'light' }
+    title: 'Interactive Assessment Form',
+    'mcpui.dev/ui-preferred-frame-size': ['900px', '700px'],
+    'mcpui.dev/ui-initial-render-data': { type: 'maturity' }
   }
 }
 ```
+
+## 🧩 MCP Server (Local)
+
+- Location: `src/utils/mcpServer.js`
+- Exposed via: `src/app/api/mcp-server/route.js`
+- Supported methods:
+  - `tools/list` → returns available tools
+  - `tools/call` → executes tool and returns `{ result: { content, uiResource } }`
+  - `resources/read` → returns resource content
+
+### Tools implemented
+- `create_assessment` → returns an interactive assessment UI (text/html)
+- `generate_report` → returns an interactive analytics report UI (text/html)
+- `list_dimensions` → returns assessment dimensions
+- `export_data` → returns exported sample data
+
+### Response shapes
+- tools/list
+```json
+{
+  "result": { "tools": [{ "name": "create_assessment", "description": "..." }, ...] }
+}
+```
+
+- tools/call (example)
+```json
+{
+  "result": {
+    "content": "Tool executed successfully",
+    "uiResource": {
+      "uri": "ui://assessment/<id>",
+      "mimeType": "text/html",
+      "text": "<!DOCTYPE html>...",
+      "_meta": {
+        "title": "Interactive Assessment Form",
+        "mcpui.dev/ui-preferred-frame-size": ["900px","700px"],
+        "mcpui.dev/ui-initial-render-data": { "type": "maturity" }
+      }
+    }
+  }
+}
+```
+
+## ✅ How to verify locally
+
+1. Start dev server
+```bash
+npm run dev
+```
+
+2. Verify API endpoints
+```bash
+# List tools
+curl -s -X POST http://localhost:3000/api/mcp-server \
+  -H 'Content-Type: application/json' \
+  -d '{"method":"tools/list"}'
+
+# Call create_assessment (should return result.uiResource)
+curl -s -X POST http://localhost:3000/api/mcp-server \
+  -H 'Content-Type: application/json' \
+  -d '{"method":"tools/call","params":{"name":"create_assessment","arguments":{"type":"maturity"}}}'
+```
+
+3. UI checks
+- Open `http://localhost:3000`
+- Type “assessment” or “report” in chat → interactive iframe appears
+- Click inside the iframe:
+  - Assessment → “Submit Assessment” sends `submit_assessment` back to chat
+  - Report → “Refresh Data” sends `refresh_report`; “Export” sends `export_report`
+
+## 🧪 What’s working now
+- Local MCP server with 4 tools
+- Dynamic inline HTML for MCP UI resources
+- Secure rendering via `HtmlResource` (iframe)
+- Bi-directional messaging (iframe → parent via `postMessage`; parent reacts in chat)
+- Network requests visible for `/api/mcp-server` in DevTools
+
+## ⚠️ Notes / next steps
+- Current MCP server is in-process via Next.js API; for production, point to a real MCP server if needed.
+- Add authentication if your MCP server requires it.
 
 ## 🎨 Sample Interactions
 
